@@ -763,9 +763,12 @@ fuse_code = function(x, blocks) {
       new_warning(sprintf("The engine '%s' is not supported.", lang))
     )
   }
-  # record what the chunk's code changed, then disarm tracking so that options
-  # set by litedown itself below (e.g. engine-returned options) aren't recorded
-  changed = .env$opts_set; .env$opts_set = os
+  # record what the chunk's code changed, then disarm tracking (NULL, not `os`)
+  # so that options set by litedown itself below (e.g. engine-returned options)
+  # aren't recorded; the on.exit() above restores `os` when this call returns.
+  # Disarming (rather than restoring `os` here) also avoids leaking options set
+  # by a nested fuse() into the enclosing chunk's tracked set (#167)
+  changed = .env$opts_set; .env$opts_set = NULL
 
   if (!opts$include) return('')
 
